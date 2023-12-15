@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Yidir app</title>
+  <style>
+    pre {
+      white-space: pre-wrap;
+      font-family: monospace;
+    }
+  </style>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <div class="container">
+    <div class="chatbot">
+      <div class="chatbot-header">
+        <h1>GPT5</h1>
+      </div>
+      <div class="chatbot-body">
+        <div class="chatbot-messages">
+          <pre id="formattedText"></pre>
+        </div>
+        <div class="chatbot-input">
+          <input type="text" placeholder="Type your message..." />
+          <button>Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "@google/generative-ai": "https://esm.run/@google/generative-ai"
+      }
+    }
+  </script>
+  <script type="module">
+
+    import { GoogleGenerativeAI } from "@google/generative-ai";
+
+    // Fetch your API_KEY
+    const API_KEY = "AIzaSyAde0V4HHdCHOOJ4ZIR2Dx4mxGfc8QxS5w";
+
+    // Access your API key (see "Set up your API key" above)
+    const genAI = new GoogleGenerativeAI(API_KEY);
+
+    // ...
+    function toMarkdown(text) {
+  // Replace starred list items with bullet points
+  text = text.replace(/\*/g, '• ');
+
+  // Remove indentation if necessary
+  text = text.replace(/^> /gm, '');
+
+  return text;
+}
+
+
+    
+    const handlevent=async ()=>{
+      const msg = input.value;
+      input.value = "";
+
+      const userMessage = document.createElement("div");
+      userMessage.classList.add("chatbot-message", "user");
+      userMessage.textContent = msg;
+      messages.appendChild(userMessage);
+     
+        
+      try {
+        const response = await chat.sendMessage(msg);
+
+        const candidates = response.response.candidates;
+
+       
+          const text = candidates[0].content.parts[0].text;
+          console.log(toMarkdown(text))
+          const botMessage = document.createElement("div");
+          botMessage.classList.add("chatbot-message", "bot");
+          botMessage.textContent = toMarkdown(text);
+
+          // Append the bot's response to the HTML
+          messages.appendChild(botMessage);
+        
+      } catch (error) {
+        console.error("Error in receiving bot response:", error);
+      }
+      
+      // Scroll to the bottom to show the latest message
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+    const chat = model.startChat({
+      history: [],
+      generationConfig: {
+        temperature : 0.9
+      },
+    });
+
+    const messages = document.querySelector(".chatbot-messages");
+    const input = document.querySelector(".chatbot-input input");
+
+    input.addEventListener("keypress", async (event) => {
+    if (event.key === "Enter") {handlevent()}
+    });
+    
+    const button = document.querySelector("button") ;
+    button.addEventListener("click", () => {
+      handlevent();
+  });
+  
+
+
+  </script>
+</body>
+
+</html>
